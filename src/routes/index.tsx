@@ -1,24 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GameBoard } from "@/components/game/GameBoard";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Liar's Deck — 32-Card Group Chat Guessing Game" },
+      {
+        name: "description",
+        content:
+          "A group chat card game for 3: the moderator hides one of 32 cards, guessers get 10 questions, and Loan, Repeat and Stop are one use each.",
+      },
+      { property: "og:title", content: "Liar's Deck — 32-Card Group Chat Guessing Game" },
+      {
+        property: "og:description",
+        content:
+          "Three players, one secret card, ten questions and three lies. Play Liar's Deck on one device.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="flex min-h-screen flex-col bg-background">
+      <header className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-4">
+        <div>
+          <h1 className="font-display text-xl font-bold">
+            Liar&apos;s Deck <span className="text-accent">♠️</span>
+          </h1>
+          <p className="text-xs text-muted-foreground">3 players · 32 cards · 10 questions</p>
+        </div>
+        <ThemeToggle />
+      </header>
+      <GameBoard />
+    </main>
   );
 }
