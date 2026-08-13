@@ -14,13 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      call_signals: {
+        Row: {
+          created_at: string
+          from_id: string
+          id: string
+          payload: Json | null
+          room_id: string
+          to_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          from_id: string
+          id?: string
+          payload?: Json | null
+          room_id: string
+          to_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          from_id?: string
+          id?: string
+          payload?: Json | null
+          room_id?: string
+          to_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_signals_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          audio_url: string | null
+          body: string | null
+          card_rank: string | null
+          card_suit: string | null
+          created_at: string
+          id: string
+          kind: string
+          recipient_id: string | null
+          room_id: string
+          sender_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          body?: string | null
+          card_rank?: string | null
+          card_suit?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          recipient_id?: string | null
+          room_id: string
+          sender_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          body?: string | null
+          card_rank?: string | null
+          card_suit?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          recipient_id?: string | null
+          room_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          phone?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          lies1: number
+          lies2: number
+          moderator_id: string
+          player1_id: string | null
+          player2_id: string | null
+          round: number
+          score1: number
+          score2: number
+          status: string
+          turn: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          lies1?: number
+          lies2?: number
+          moderator_id: string
+          player1_id?: string | null
+          player2_id?: string | null
+          round?: number
+          score1?: number
+          score2?: number
+          status?: string
+          turn?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          lies1?: number
+          lies2?: number
+          moderator_id?: string
+          player1_id?: string | null
+          player2_id?: string | null
+          round?: number
+          score1?: number
+          score2?: number
+          status?: string
+          turn?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_room_member: {
+        Args: { _room_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
