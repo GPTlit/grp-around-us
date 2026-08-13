@@ -17,7 +17,7 @@ export const suitOf = (id: SuitId) => SUITS.find((s) => s.id === id)!;
 
 export const cardLabel = (c: Card) => `${c.rank}${suitOf(c.suit).symbol}`;
 
-export const drawCard = (): Card => DECK[Math.floor(Math.random() * DECK.length)];
+export const drawCard = (): Card => DECK[Math.floor(Math.random() * DECK.length)]!;
 
 export const MAX_QUESTIONS = 10;
 export const MAX_LIES = 3;
