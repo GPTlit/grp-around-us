@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, HelpCircle, RotateCcw, Hand, Repeat, Search } from "lucide-react";
+import { Eye, EyeOff, RotateCcw, Hand, Repeat, Search } from "lucide-react";
 import {
   MAX_LIES,
   MAX_QUESTIONS,
@@ -499,5 +499,3 @@ function Bubble({ message }: { message: Message }) {
     </div>
   );
 }
-
-export { HelpCircle };
