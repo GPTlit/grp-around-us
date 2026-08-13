@@ -78,7 +78,7 @@ function Lobby() {
       }
       const { error: uErr } = await supabase
         .from("rooms")
-        .update({ [slot]: uid })
+        .update(slot === "player1_id" ? { player1_id: uid } : { player2_id: uid })
         .eq("id", data.id);
       if (uErr) {
         setBusy(null);
