@@ -180,12 +180,14 @@ function ScoreCard({
   name,
   score,
   lies,
+  showLies,
   tone,
   active,
 }: {
   name: string;
   score: number;
   lies: number;
+  showLies: boolean;
   tone: "blue" | "red";
   active: boolean;
 }) {
@@ -200,13 +202,18 @@ function ScoreCard({
         <p className={`font-display text-2xl font-bold ${tone === "blue" ? "text-primary" : "text-destructive"}`}>
           {score}
         </p>
-        <p className={`text-[11px] ${lies > MAX_LIES ? "text-destructive" : "text-muted-foreground"}`}>
-          lies {lies}/{MAX_LIES}
-        </p>
+        {showLies ? (
+          <p className={`text-[11px] ${lies > MAX_LIES ? "text-destructive" : "text-muted-foreground"}`}>
+            lies {lies}/{MAX_LIES}
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground/60">lies hidden</p>
+        )}
       </div>
     </div>
   );
 }
+
 
 function Bubble({
   m,
