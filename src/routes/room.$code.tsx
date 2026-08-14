@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  Play,
+  Pause,
+
   Loader2,
   Mic,
   Send,
@@ -105,9 +108,24 @@ function RoomPage() {
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <ScoreCard name={p1} score={room.score1} lies={room.lies1} tone="blue" active={room.turn === 1} />
-          <ScoreCard name={p2} score={room.score2} lies={room.lies2} tone="red" active={room.turn === 2} />
+          <ScoreCard
+            name={p1}
+            score={room.score1}
+            lies={room.lies1}
+            showLies={isMod || meIndex === 1}
+            tone="blue"
+            active={room.turn === 1}
+          />
+          <ScoreCard
+            name={p2}
+            score={room.score2}
+            lies={room.lies2}
+            showLies={isMod || meIndex === 2}
+            tone="red"
+            active={room.turn === 2}
+          />
         </div>
+
         <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
           {matchOver
             ? `🏆 ${room.score1 > room.score2 ? p1 : p2} wins the match!`
@@ -165,12 +183,14 @@ function ScoreCard({
   name,
   score,
   lies,
+  showLies,
   tone,
   active,
 }: {
   name: string;
   score: number;
   lies: number;
+  showLies: boolean;
   tone: "blue" | "red";
   active: boolean;
 }) {
@@ -185,13 +205,18 @@ function ScoreCard({
         <p className={`font-display text-2xl font-bold ${tone === "blue" ? "text-primary" : "text-destructive"}`}>
           {score}
         </p>
-        <p className={`text-[11px] ${lies > MAX_LIES ? "text-destructive" : "text-muted-foreground"}`}>
-          lies {lies}/{MAX_LIES}
-        </p>
+        {showLies ? (
+          <p className={`text-[11px] ${lies > MAX_LIES ? "text-destructive" : "text-muted-foreground"}`}>
+            lies {lies}/{MAX_LIES}
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground/60">lies hidden</p>
+        )}
       </div>
     </div>
   );
 }
+
 
 function Bubble({
   m,
@@ -258,8 +283,17 @@ function Bubble({
   );
 }
 
+const SPEEDS = [1, 1.5, 2] as const;
+
 function VoicePlayer({ path }: { path: string }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
     let alive = true;
     supabase.storage
@@ -272,9 +306,100 @@ function VoicePlayer({ path }: { path: string }) {
       alive = false;
     };
   }, [path]);
+
+  // deterministic pseudo-waveform from the path so it looks stable per message
+  const bars = useMemo(() => {
+    let seed = 0;
+    for (let i = 0; i < path.length; i++) seed = (seed * 31 + path.charCodeAt(i)) % 100000;
+    return Array.from({ length: 34 }, () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return 0.25 + ((seed >> 8) % 100) / 133;
+    });
+  }, [path]);
+
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.paused) void a.play();
+    else a.pause();
+  };
+
+  const cycleSpeed = () => {
+    const next = (speed + 1) % SPEEDS.length;
+    setSpeed(next);
+    if (audioRef.current) audioRef.current.playbackRate = SPEEDS[next]!;
+  };
+
+  const fmt = (s: number) =>
+    Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
+
   if (!url) return <span className="text-xs opacity-70">loading voice note…</span>;
-  return <audio controls src={url} className="h-9 w-52" />;
+
+  return (
+    <div className="flex w-56 items-center gap-2.5">
+      <audio
+        ref={audioRef}
+        src={url}
+        preload="metadata"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => {
+          setPlaying(false);
+          setProgress(0);
+          setTime(0);
+        }}
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        onTimeUpdate={(e) => {
+          const a = e.currentTarget;
+          setTime(a.currentTime);
+          if (a.duration) setProgress(a.currentTime / a.duration);
+        }}
+        className="hidden"
+      />
+      <button
+        onClick={toggle}
+        aria-label={playing ? "Pause voice note" : "Play voice note"}
+        className="grid size-9 shrink-0 place-items-center rounded-full bg-current/15 backdrop-blur transition active:scale-95"
+      >
+        {playing ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
+      </button>
+
+      <button
+        onClick={(e) => {
+          const a = audioRef.current;
+          if (!a || !a.duration) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
+        }}
+        aria-label="Seek voice note"
+        className="flex h-8 flex-1 items-center gap-[2px]"
+      >
+        {bars.map((h, i) => {
+          const played = i / bars.length <= progress;
+          return (
+            <span
+              key={i}
+              className={`w-[2px] flex-1 rounded-full transition-opacity ${played ? "opacity-100" : "opacity-35"}`}
+              style={{ height: `${Math.min(h, 1) * 100}%`, backgroundColor: "currentColor" }}
+            />
+          );
+        })}
+      </button>
+
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
+        <button
+          onClick={cycleSpeed}
+          aria-label="Change playback speed"
+          className="rounded-full bg-current/15 px-1.5 py-px text-[10px] font-bold leading-tight"
+        >
+          {SPEEDS[speed]}×
+        </button>
+        <span className="text-[10px] tabular-nums opacity-70">{fmt(playing || time ? time : duration)}</span>
+      </div>
+    </div>
+  );
 }
+
 
 /* ---------- player side ---------- */
 
