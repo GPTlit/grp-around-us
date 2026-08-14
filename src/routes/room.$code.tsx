@@ -105,9 +105,24 @@ function RoomPage() {
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <ScoreCard name={p1} score={room.score1} lies={room.lies1} tone="blue" active={room.turn === 1} />
-          <ScoreCard name={p2} score={room.score2} lies={room.lies2} tone="red" active={room.turn === 2} />
+          <ScoreCard
+            name={p1}
+            score={room.score1}
+            lies={room.lies1}
+            showLies={isMod || meIndex === 1}
+            tone="blue"
+            active={room.turn === 1}
+          />
+          <ScoreCard
+            name={p2}
+            score={room.score2}
+            lies={room.lies2}
+            showLies={isMod || meIndex === 2}
+            tone="red"
+            active={room.turn === 2}
+          />
         </div>
+
         <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
           {matchOver
             ? `🏆 ${room.score1 > room.score2 ? p1 : p2} wins the match!`
