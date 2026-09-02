@@ -208,7 +208,7 @@ export const Route = createFileRoute("/api/studio")({
           const result = streamText({
             model: createStudioModel(apiKey),
             system: SYSTEM,
-            messages: convertToModelMessages(body.messages),
+            messages: await convertToModelMessages(body.messages),
             tools,
             stopWhen: stepCountIs(50),
             providerOptions: {
