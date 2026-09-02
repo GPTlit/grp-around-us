@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          accent: string
+          id: string
+          name: string
+          settings: Json
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          accent?: string
+          id?: string
+          name?: string
+          settings?: Json
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          accent?: string
+          id?: string
+          name?: string
+          settings?: Json
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_signals: {
         Row: {
           created_at: string
@@ -51,6 +78,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      code_drafts: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          file_path: string
+          id: string
+          language: string
+          note: string | null
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          file_path: string
+          id?: string
+          language?: string
+          note?: string | null
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          file_path?: string
+          id?: string
+          language?: string
+          note?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      extensions: {
+        Row: {
+          blocks: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          published: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          blocks?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          published?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          published?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -165,6 +264,33 @@ export type Database = {
           score2?: number
           status?: string
           turn?: number
+        }
+        Relationships: []
+      }
+      studio_runs: {
+        Row: {
+          changes: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          prompt: string
+          summary: string | null
+        }
+        Insert: {
+          changes?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt: string
+          summary?: string | null
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt?: string
+          summary?: string | null
         }
         Relationships: []
       }
