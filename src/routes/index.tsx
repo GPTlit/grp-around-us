@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Loader2, LogOut, Plus, Users, Spade } from "lucide-react";
+import { Loader2, LogOut, Plus, Users, Spade, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
