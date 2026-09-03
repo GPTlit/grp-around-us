@@ -32,30 +32,34 @@ HOW TO WORK
 ${BLOCK_DOCS}
 Blocks are passed as a JSON string in "blocks_json". Slugs are lowercase kebab-case.`;
 
-type StudioTables = "app_config" | "extensions" | "code_drafts";
+type StudioTables = "app_config" | "extensions" | "code_drafts" | "studio_runs";
 
-async function rest(
-  path: string,
-  init: RequestInit & { table: StudioTables },
-): Promise<unknown> {
-  const url = `${process.env["SUPABASE_URL"]}/rest/v1/${init.table}${path}`;
-  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation,resolution=merge-duplicates",
-      ...(init.headers ?? {}),
-    },
-  });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`Backend error ${res.status}: ${text}`);
-  return text ? JSON.parse(text) : null;
+/** All writes run as the signed-in player through the Data API, so RLS still applies. */
+function makeRest(token: string) {
+  return async function rest(
+    path: string,
+    init: RequestInit & { table: StudioTables },
+  ): Promise<unknown> {
+    const url = `${process.env["SUPABASE_URL"]}/rest/v1/${init.table}${path}`;
+    const res = await fetch(url, {
+      ...init,
+      headers: {
+        apikey: process.env["SUPABASE_PUBLISHABLE_KEY"]!,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation,resolution=merge-duplicates",
+        ...(init.headers ?? {}),
+      },
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Backend error ${res.status}: ${text}`);
+    return text ? JSON.parse(text) : null;
+  };
 }
 
-const tools = {
+function makeTools(token: string) {
+  const rest = makeRest(token);
+  return {
   get_app_state: tool({
     description: "Read the app's current name/tagline/accent, its AI-built pages and saved code drafts.",
     inputSchema: z.object({}),
@@ -177,7 +181,8 @@ const tools = {
       return { ok: true, file_path: input.file_path, lines: input.code.split("\n").length };
     },
   }),
-};
+  } as const;
+}
 
 export const Route = createFileRoute("/api/studio")({
   server: {
@@ -209,7 +214,7 @@ export const Route = createFileRoute("/api/studio")({
             model: createStudioModel(apiKey),
             system: SYSTEM,
             messages: await convertToModelMessages(body.messages),
-            tools,
+            tools: makeTools(token),
             stopWhen: stepCountIs(50),
             providerOptions: {
               openai: {
