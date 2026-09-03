@@ -192,6 +192,19 @@ function Lobby() {
               </p>
             )}
 
+            <Link
+              to="/studio"
+              className="card-surface flex items-center gap-3 rounded-3xl p-5 transition hover:bg-accent/10"
+            >
+              <Sparkles className="size-5 text-accent" />
+              <span>
+                <span className="block text-sm font-bold text-foreground">AI Studio</span>
+                <span className="block text-xs text-muted-foreground">
+                  Prompt the in-app builder to rename the app, restyle it or ship new pages
+                </span>
+              </span>
+            </Link>
+
             <div className="card-surface rounded-3xl p-5 text-sm text-muted-foreground">
               <h3 className="text-sm font-semibold text-foreground">House rules</h3>
               <ul className="mt-2 space-y-1.5">
