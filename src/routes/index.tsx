@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Loader2, LogOut, Plus, Users, Spade } from "lucide-react";
+import { Loader2, LogOut, Plus, Users, Spade, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MAX_LIES, TARGET_SCORE } from "@/lib/game";
 
@@ -36,6 +37,7 @@ const randomCode = () =>
 function Lobby() {
   const navigate = useNavigate();
   const { session, profile, loading } = useAuth();
+  const config = useAppConfig();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState<"create" | "join" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,10 +99,10 @@ function Lobby() {
       <header className="relative mx-auto flex w-full max-w-md items-center justify-between px-4 py-4">
         <div>
           <h1 className="font-display text-xl font-bold">
-            Liar&apos;s Deck <span className="text-accent">♠️</span>
+            {config.name} <span className="text-accent">♠️</span>
           </h1>
           <p className="text-xs text-muted-foreground">
-            3 players · 32 cards · {MAX_LIES} lies · first to {TARGET_SCORE}
+            {config.tagline || `3 players · 32 cards · ${MAX_LIES} lies · first to ${TARGET_SCORE}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -191,6 +193,19 @@ function Lobby() {
                 {error}
               </p>
             )}
+
+            <Link
+              to="/studio"
+              className="card-surface flex items-center gap-3 rounded-3xl p-5 transition hover:bg-accent/10"
+            >
+              <Sparkles className="size-5 text-accent" />
+              <span>
+                <span className="block text-sm font-bold text-foreground">AI Studio</span>
+                <span className="block text-xs text-muted-foreground">
+                  Prompt the in-app builder to rename the app, restyle it or ship new pages
+                </span>
+              </span>
+            </Link>
 
             <div className="card-surface rounded-3xl p-5 text-sm text-muted-foreground">
               <h3 className="text-sm font-semibold text-foreground">House rules</h3>
