@@ -73,7 +73,7 @@ function Studio() {
     () =>
       new DefaultChatTransport<UIMessage>({
         api: "/api/studio",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       }),
     [token],
   );
