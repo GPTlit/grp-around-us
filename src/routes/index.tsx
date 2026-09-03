@@ -97,10 +97,10 @@ function Lobby() {
       <header className="relative mx-auto flex w-full max-w-md items-center justify-between px-4 py-4">
         <div>
           <h1 className="font-display text-xl font-bold">
-            Liar&apos;s Deck <span className="text-accent">♠️</span>
+            {config.name} <span className="text-accent">♠️</span>
           </h1>
           <p className="text-xs text-muted-foreground">
-            3 players · 32 cards · {MAX_LIES} lies · first to {TARGET_SCORE}
+            {config.tagline || `3 players · 32 cards · ${MAX_LIES} lies · first to ${TARGET_SCORE}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
