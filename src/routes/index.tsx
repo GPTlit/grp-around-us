@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { Loader2, LogOut, Plus, Users, Spade, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MAX_LIES, TARGET_SCORE } from "@/lib/game";
 
@@ -36,6 +37,7 @@ const randomCode = () =>
 function Lobby() {
   const navigate = useNavigate();
   const { session, profile, loading } = useAuth();
+  const config = useAppConfig();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState<"create" | "join" | null>(null);
   const [error, setError] = useState<string | null>(null);
