@@ -8,7 +8,9 @@ import {
   ArrowUp,
   Code2,
   Copy,
+  Download,
   Loader2,
+  Lock,
   Send,
   Sparkles,
   Wand2,
@@ -18,6 +20,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { useAuth } from "@/hooks/useAuth";
+import { isAdminEmail } from "@/lib/admin";
+
 
 export const Route = createFileRoute("/studio")({
   head: () => ({
