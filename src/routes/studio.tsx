@@ -122,20 +122,22 @@ function Studio() {
     );
   }
 
-  if (!session) {
+  if (!session || !isAdminEmail(session.user.email)) {
     return (
       <main className="grid min-h-screen place-items-center bg-background px-4">
         <div className="card-surface w-full max-w-sm rounded-3xl p-6 text-center">
-          <Sparkles className="mx-auto size-7 text-accent" />
-          <h1 className="mt-3 font-display text-xl font-bold">AI Studio</h1>
+          <Lock className="mx-auto size-7 text-accent" />
+          <h1 className="mt-3 font-display text-xl font-bold">Admin panel</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to let the builder change the live app.
+            {session
+              ? "This account can’t open the admin panel."
+              : "Sign in with the owner account to open the admin panel."}
           </p>
           <Link
-            to="/auth"
+            to={session ? "/" : "/auth"}
             className="mt-5 inline-flex rounded-2xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
           >
-            Sign in
+            {session ? "Back to lobby" : "Sign in"}
           </Link>
         </div>
       </main>
@@ -154,13 +156,35 @@ function Studio() {
           <ArrowLeft className="size-4" /> Lobby
         </Link>
         <div className="min-w-0 text-center">
-          <p className="font-display text-base font-bold">AI Studio ✨</p>
+          <p className="font-display text-base font-bold">Admin panel ✨</p>
           <p className="truncate text-[11px] text-muted-foreground">
             editing “{config.name}” live
           </p>
         </div>
         <ThemeToggle />
       </header>
+
+      <div className="relative mx-auto w-full max-w-2xl px-4">
+        <div className="card-surface flex flex-wrap items-center gap-3 rounded-3xl p-4">
+          <Download className="size-5 shrink-0 text-accent" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold">Netlify-ready copy</p>
+            <p className="text-xs text-muted-foreground">
+              Downloads a zip of the current app (name, style, every AI page and saved code). Unzip
+              it and drag the folder onto netlify.com/drop — it hosts instantly, no setup.
+            </p>
+            {exportError && <p className="mt-1 text-xs text-destructive">{exportError}</p>}
+          </div>
+          <button
+            onClick={exportSite}
+            disabled={exporting}
+            className="rounded-2xl bg-gradient-to-r from-primary to-accent px-4 py-2 text-xs font-bold text-primary-foreground disabled:opacity-60"
+          >
+            {exporting ? <Loader2 className="size-4 animate-spin" /> : "Download zip"}
+          </button>
+        </div>
+      </div>
+
 
       <section className="relative mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 pb-40">
         {messages.length === 0 ? (
