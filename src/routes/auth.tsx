@@ -56,23 +56,24 @@ function AuthPage() {
         const name = username.trim();
         if (name.length < 3) throw new Error("Pick a username with at least 3 characters.");
         const { data, error: err } = await supabase.auth.signUp({
-          email: phoneToEmail(digits),
+          email: loginEmail,
           password,
-          options: { data: { username: name, phone: digits } },
+          options: { data: { username: name, phone: isEmail ? null : digits } },
         });
         if (err) throw err;
         const uid = data.user?.id;
         if (uid) {
           const { error: pErr } = await supabase
             .from("profiles")
-            .insert({ id: uid, username: name, phone: digits });
+            .insert({ id: uid, username: name, phone: isEmail ? null : digits });
           if (pErr && !pErr.message.includes("duplicate")) throw pErr;
         }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({
-          email: phoneToEmail(digits),
+          email: loginEmail,
           password,
         });
+
         if (err) throw err;
       }
       void navigate({ to: "/" });
