@@ -194,18 +194,22 @@ function Lobby() {
               </p>
             )}
 
-            <Link
-              to="/studio"
-              className="card-surface flex items-center gap-3 rounded-3xl p-5 transition hover:bg-accent/10"
-            >
-              <Sparkles className="size-5 text-accent" />
-              <span>
-                <span className="block text-sm font-bold text-foreground">AI Studio</span>
-                <span className="block text-xs text-muted-foreground">
-                  Prompt the in-app builder to rename the app, restyle it or ship new pages
+            {isAdminEmail(session.user.email) && (
+              <Link
+                to="/studio"
+                className="flex items-center gap-3 rounded-3xl border border-accent/40 bg-accent/10 p-5 transition hover:bg-accent/20"
+              >
+                <ShieldCheck className="size-5 text-accent" />
+                <span>
+                  <span className="block text-sm font-bold text-foreground">Admin panel</span>
+                  <span className="block text-xs text-muted-foreground">
+                    AI Studio: rename and restyle the app, ship new pages, write code and export a
+                    Netlify-ready copy
+                  </span>
                 </span>
-              </span>
-            </Link>
+              </Link>
+            )}
+
 
             <div className="card-surface rounded-3xl p-5 text-sm text-muted-foreground">
               <h3 className="text-sm font-semibold text-foreground">House rules</h3>
