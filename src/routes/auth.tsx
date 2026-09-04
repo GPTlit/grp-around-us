@@ -123,12 +123,12 @@ function AuthPage() {
           </div>
 
           <form onSubmit={submit} className="mt-5 space-y-3">
-            <Field icon={<Phone className="size-4" />} label="Phone number">
+            <Field icon={<Phone className="size-4" />} label="Phone number or email">
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                placeholder="e.g. 22334455"
+                placeholder="e.g. 22334455 or you@mail.com"
+
                 className="w-full bg-transparent text-sm outline-none"
               />
             </Field>
