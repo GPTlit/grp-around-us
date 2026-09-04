@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiStudioRouteImport } from './routes/api/studio'
 import { Route as RoomCodeRouteImport } from './routes/room.$code'
 import { Route as XSlugRouteImport } from './routes/x.$slug'
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportRoute = ApiExportRouteImport.update({
+  id: '/api/export',
+  path: '/api/export',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStudioRoute = ApiStudioRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/studio': typeof StudioRoute
+  '/api/export': typeof ApiExportRoute
   '/api/studio': typeof ApiStudioRoute
   '/room/$code': typeof RoomCodeRoute
   '/x/$slug': typeof XSlugRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/studio': typeof StudioRoute
+  '/api/export': typeof ApiExportRoute
   '/api/studio': typeof ApiStudioRoute
   '/room/$code': typeof RoomCodeRoute
   '/x/$slug': typeof XSlugRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/studio': typeof StudioRoute
+  '/api/export': typeof ApiExportRoute
   '/api/studio': typeof ApiStudioRoute
   '/room/$code': typeof RoomCodeRoute
   '/x/$slug': typeof XSlugRoute
@@ -75,14 +84,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/studio' | '/api/studio' | '/room/$code' | '/x/$slug'
+    | '/'
+    | '/auth'
+    | '/studio'
+    | '/api/export'
+    | '/api/studio'
+    | '/room/$code'
+    | '/x/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/studio' | '/api/studio' | '/room/$code' | '/x/$slug'
+  to:
+    | '/'
+    | '/auth'
+    | '/studio'
+    | '/api/export'
+    | '/api/studio'
+    | '/room/$code'
+    | '/x/$slug'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/studio'
+    | '/api/export'
     | '/api/studio'
     | '/room/$code'
     | '/x/$slug'
@@ -92,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   StudioRoute: typeof StudioRoute
+  ApiExportRoute: typeof ApiExportRoute
   ApiStudioRoute: typeof ApiStudioRoute
   RoomCodeRoute: typeof RoomCodeRoute
   XSlugRoute: typeof XSlugRoute
@@ -118,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export': {
+      id: '/api/export'
+      path: '/api/export'
+      fullPath: '/api/export'
+      preLoaderRoute: typeof ApiExportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/studio': {
@@ -148,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   StudioRoute: StudioRoute,
+  ApiExportRoute: ApiExportRoute,
   ApiStudioRoute: ApiStudioRoute,
   RoomCodeRoute: RoomCodeRoute,
   XSlugRoute: XSlugRoute,

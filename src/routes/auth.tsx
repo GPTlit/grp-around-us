@@ -43,8 +43,12 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const digits = phone.replace(/[^0-9]/g, "");
-    if (digits.length < 6) return setError("Enter a valid phone number.");
+    const raw = phone.trim();
+    const isEmail = raw.includes("@");
+    const digits = raw.replace(/[^0-9]/g, "");
+    const loginEmail = isEmail ? raw.toLowerCase() : phoneToEmail(digits);
+    if (!isEmail && digits.length < 6) return setError("Enter a valid phone number or email.");
+
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     setBusy(true);
     try {
@@ -52,23 +56,24 @@ function AuthPage() {
         const name = username.trim();
         if (name.length < 3) throw new Error("Pick a username with at least 3 characters.");
         const { data, error: err } = await supabase.auth.signUp({
-          email: phoneToEmail(digits),
+          email: loginEmail,
           password,
-          options: { data: { username: name, phone: digits } },
+          options: { data: { username: name, phone: isEmail ? null : digits } },
         });
         if (err) throw err;
         const uid = data.user?.id;
         if (uid) {
           const { error: pErr } = await supabase
             .from("profiles")
-            .insert({ id: uid, username: name, phone: digits });
+            .insert({ id: uid, username: name, phone: isEmail ? null : digits });
           if (pErr && !pErr.message.includes("duplicate")) throw pErr;
         }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({
-          email: phoneToEmail(digits),
+          email: loginEmail,
           password,
         });
+
         if (err) throw err;
       }
       void navigate({ to: "/" });
@@ -118,12 +123,12 @@ function AuthPage() {
           </div>
 
           <form onSubmit={submit} className="mt-5 space-y-3">
-            <Field icon={<Phone className="size-4" />} label="Phone number">
+            <Field icon={<Phone className="size-4" />} label="Phone number or email">
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                placeholder="e.g. 22334455"
+                placeholder="e.g. 22334455 or you@mail.com"
+
                 className="w-full bg-transparent text-sm outline-none"
               />
             </Field>
