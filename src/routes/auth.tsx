@@ -43,8 +43,12 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const digits = phone.replace(/[^0-9]/g, "");
-    if (digits.length < 6) return setError("Enter a valid phone number.");
+    const raw = phone.trim();
+    const isEmail = raw.includes("@");
+    const digits = raw.replace(/[^0-9]/g, "");
+    const loginEmail = isEmail ? raw.toLowerCase() : phoneToEmail(digits);
+    if (!isEmail && digits.length < 6) return setError("Enter a valid phone number or email.");
+
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     setBusy(true);
     try {
