@@ -72,6 +72,34 @@ function Studio() {
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const token = session?.access_token;
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function exportSite() {
+    if (!token || exporting) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        res.headers.get("content-disposition")?.match(/filename="(.+)"/)?.[1] ?? "site-netlify.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
 
   const transport = useMemo(
     () =>
