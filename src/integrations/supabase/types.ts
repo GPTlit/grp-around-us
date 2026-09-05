@@ -14,6 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_approvals: {
+        Row: {
+          action: string
+          approved_by: string | null
+          created_at: string
+          decided_at: string | null
+          details: Json
+          id: string
+          status: string
+          summary: string
+          token: string
+        }
+        Insert: {
+          action: string
+          approved_by?: string | null
+          created_at?: string
+          decided_at?: string | null
+          details?: Json
+          id?: string
+          status?: string
+          summary: string
+          token?: string
+        }
+        Update: {
+          action?: string
+          approved_by?: string | null
+          created_at?: string
+          decided_at?: string | null
+          details?: Json
+          id?: string
+          status?: string
+          summary?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      agent_audit: {
+        Row: {
+          actor: string | null
+          created_at: string
+          id: string
+          input: Json
+          ok: boolean
+          outcome: string | null
+          tool: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string
+          id?: string
+          input?: Json
+          ok?: boolean
+          outcome?: string | null
+          tool: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string
+          id?: string
+          input?: Json
+          ok?: boolean
+          outcome?: string | null
+          tool?: string
+        }
+        Relationships: []
+      }
+      agent_branches: {
+        Row: {
+          active: boolean
+          base_branch: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_branch?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_branch?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agent_commits: {
+        Row: {
+          branch: string
+          changed_paths: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          reverted: boolean
+          snapshot: Json
+        }
+        Insert: {
+          branch: string
+          changed_paths?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          reverted?: boolean
+          snapshot?: Json
+        }
+        Update: {
+          branch?: string
+          changed_paths?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          reverted?: boolean
+          snapshot?: Json
+        }
+        Relationships: []
+      }
+      agent_deploys: {
+        Row: {
+          branch: string
+          created_at: string
+          created_by: string | null
+          file_count: number
+          id: string
+          label: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          branch?: string
+          created_at?: string
+          created_by?: string | null
+          file_count?: number
+          id?: string
+          label: string
+          notes?: string | null
+          status?: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          created_by?: string | null
+          file_count?: number
+          id?: string
+          label?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      agent_files: {
+        Row: {
+          branch: string
+          content: string
+          created_at: string
+          deleted: boolean
+          id: string
+          path: string
+          updated_at: string
+        }
+        Insert: {
+          branch?: string
+          content?: string
+          created_at?: string
+          deleted?: boolean
+          id?: string
+          path: string
+          updated_at?: string
+        }
+        Update: {
+          branch?: string
+          content?: string
+          created_at?: string
+          deleted?: boolean
+          id?: string
+          path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agent_migrations: {
+        Row: {
+          applied_at: string | null
+          created_at: string
+          created_by: string | null
+          destructive: boolean
+          id: string
+          name: string
+          sql: string
+          status: string
+          updated_at: string
+          validation: Json
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          destructive?: boolean
+          id?: string
+          name: string
+          sql: string
+          status?: string
+          updated_at?: string
+          validation?: Json
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          destructive?: boolean
+          id?: string
+          name?: string
+          sql?: string
+          status?: string
+          updated_at?: string
+          validation?: Json
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           accent: string
@@ -299,6 +533,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      agent_apply_migration: {
+        Args: { _migration_id: string; _token: string }
+        Returns: Json
+      }
+      agent_inspect_schema: { Args: never; Returns: Json }
+      is_app_owner: { Args: never; Returns: boolean }
       is_room_member: {
         Args: { _room_id: string; _user_id: string }
         Returns: boolean
