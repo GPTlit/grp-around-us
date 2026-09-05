@@ -533,11 +533,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      agent_apply_migration: {
+      agent_apply_migration_admin: {
         Args: { _migration_id: string; _token: string }
         Returns: Json
       }
-      agent_inspect_schema: { Args: never; Returns: Json }
+      agent_inspect_schema_admin: { Args: never; Returns: Json }
       is_app_owner: { Args: never; Returns: boolean }
       is_room_member: {
         Args: { _room_id: string; _user_id: string }
