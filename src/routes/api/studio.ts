@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "ai";
 import { z } from "zod";
 
+import { isAdminEmail } from "@/lib/admin";
+import { AGENT_DOCS, makeAgentTools } from "@/lib/agent-tools.server";
 import { createStudioModel } from "@/lib/ai-gateway.server";
 import { BLOCK_DOCS } from "@/lib/blocks";
 
@@ -28,6 +30,8 @@ HOW TO WORK
 - Prefer doing multiple tool calls in one turn (e.g. config + two pages) to fully satisfy a request.
 - Keep the vibe of the game: bright, playful, a bit cheeky, bluffing-themed.
 - Finish with a short summary of exactly what changed and links like /x/<slug>.
+
+${AGENT_DOCS}
 
 ${BLOCK_DOCS}
 Blocks are passed as a JSON string in "blocks_json". Slugs are lowercase kebab-case.`;
@@ -206,6 +210,9 @@ export const Route = createFileRoute("/api/studio")({
           },
         });
         if (!userRes.ok) return new Response("Unauthorized", { status: 401 });
+        const user = (await userRes.json()) as { id: string; email?: string };
+        if (!isAdminEmail(user.email)) return new Response("Forbidden", { status: 403 });
+        const actor = { userId: user.id, email: user.email ?? "" };
 
         const body = (await request.json()) as { messages: UIMessage[] };
 
@@ -214,7 +221,7 @@ export const Route = createFileRoute("/api/studio")({
             model: createStudioModel(apiKey),
             system: SYSTEM,
             messages: await convertToModelMessages(body.messages),
-            tools: makeTools(token),
+            tools: { ...makeTools(token), ...makeAgentTools(actor) },
             stopWhen: stepCountIs(50),
             providerOptions: {
               openai: {

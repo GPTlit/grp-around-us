@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminEmail } from "@/lib/admin";
+import { decideAgentApproval, getAgentWorkspace } from "@/lib/agent-admin.functions";
 
 
 export const Route = createFileRoute("/studio")({
@@ -67,7 +68,8 @@ function Studio() {
   const { session, loading } = useAuth();
   const config = useAppConfig();
   const [input, setInput] = useState("");
-  const [tab, setTab] = useState<"pages" | "code">("pages");
+  const [tab, setTab] = useState<"pages" | "code" | "workspace">("pages");
+  const [ws, setWs] = useState<WorkspaceState | null>(null);
   const [pages, setPages] = useState<ExtRow[]>([]);
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -111,6 +113,7 @@ function Studio() {
   );
 
   const { messages, sendMessage, status, error } = useChat({ transport });
+  const pendingCount = ws?.approvals.filter((a) => a.status === "pending").length ?? 0;
   const busy = status === "submitted" || status === "streaming";
 
   const refresh = () => {
@@ -125,7 +128,13 @@ function Studio() {
       .order("created_at", { ascending: false })
       .limit(20)
       .then(({ data }) => setDrafts((data as DraftRow[] | null) ?? []));
+    void getAgentWorkspace().then(setWs).catch(() => setWs(null));
   };
+
+  async function decide(id: string, approve: boolean) {
+    await decideAgentApproval({ data: { id, approve } });
+    refresh();
+  }
 
   useEffect(() => {
     if (session) refresh();
@@ -257,7 +266,7 @@ function Studio() {
 
         <div className="card-surface rounded-3xl p-4">
           <div className="flex gap-2">
-            {(["pages", "code"] as const).map((t) => (
+            {(["pages", "code", "workspace"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -267,7 +276,11 @@ function Studio() {
                     : "bg-secondary text-secondary-foreground"
                 }`}
               >
-                {t === "pages" ? `AI pages (${pages.length})` : `Code drafts (${drafts.length})`}
+                {t === "pages"
+                  ? `AI pages (${pages.length})`
+                  : t === "code"
+                    ? `Code drafts (${drafts.length})`
+                    : `Workspace${pendingCount ? ` (${pendingCount})` : ""}`}
               </button>
             ))}
           </div>
@@ -295,7 +308,7 @@ function Studio() {
                 ))
               )}
             </div>
-          ) : (
+          ) : tab === "code" ? (
             <div className="mt-3 space-y-3">
               {drafts.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No code drafts yet.</p>
@@ -303,6 +316,8 @@ function Studio() {
                 drafts.map((d) => <DraftCard key={d.id} draft={d} />)
               )}
             </div>
+          ) : (
+            <WorkspacePanel state={ws} onDecide={decide} />
           )}
         </div>
       </section>
@@ -336,6 +351,93 @@ function Studio() {
         </div>
       </div>
     </main>
+  );
+}
+
+type WorkspaceState = Awaited<ReturnType<typeof getAgentWorkspace>>;
+
+function WorkspacePanel({
+  state,
+  onDecide,
+}: {
+  state: WorkspaceState | null;
+  onDecide: (id: string, approve: boolean) => Promise<void>;
+}) {
+  if (!state) {
+    return <p className="mt-3 text-sm text-muted-foreground">Loading the builder's workspace…</p>;
+  }
+  const pending = state.approvals.filter((a) => a.status === "pending");
+  return (
+    <div className="mt-3 space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Waiting for your approval
+        </p>
+        {pending.length === 0 ? (
+          <p className="mt-1 text-sm text-muted-foreground">Nothing waiting.</p>
+        ) : (
+          <div className="mt-2 space-y-2">
+            {pending.map((a) => (
+              <div key={a.id} className="rounded-2xl border border-accent/40 bg-accent/10 p-3">
+                <p className="text-sm font-semibold">{a.summary}</p>
+                <p className="font-mono text-[11px] text-muted-foreground">{a.action}</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => void onDecide(a.id, true)}
+                    className="rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => void onDecide(a.id, false)}
+                    className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Saved versions
+        </p>
+        {state.commits.length === 0 ? (
+          <p className="mt-1 text-sm text-muted-foreground">No saved versions yet.</p>
+        ) : (
+          <ul className="mt-2 space-y-1.5">
+            {state.commits.map((c) => (
+              <li key={c.id} className="rounded-2xl border border-border bg-muted/40 px-3 py-2">
+                <p className="text-sm font-semibold">
+                  {c.message}
+                  {c.reverted ? " (undone)" : ""}
+                </p>
+                <p className="font-mono text-[11px] text-muted-foreground">
+                  {c.branch} · {c.changed_paths?.length ?? 0} files
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Recent activity
+        </p>
+        <ul className="mt-2 space-y-1">
+          {state.audit.slice(0, 10).map((a) => (
+            <li key={a.id} className="text-xs text-muted-foreground">
+              <span className="font-mono">{a.tool}</span> — {a.outcome}
+            </li>
+          ))}
+          {state.audit.length === 0 && <li className="text-sm">Nothing yet.</li>}
+        </ul>
+      </div>
+    </div>
   );
 }
 
