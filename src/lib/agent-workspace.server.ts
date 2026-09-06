@@ -170,7 +170,7 @@ export async function readFile(branch: string, path: string, from?: number, to?:
 
 export async function search(branch: string, pattern: string, glob: string | null, limit?: number) {
   const files = await branchFiles(branch);
-  const hits = searchSource(files, pattern, { glob, limit });
+  const hits = searchSource(files, pattern, limit === undefined ? { glob } : { glob, limit });
   return { branch, pattern, hit_count: hits.length, hits };
 }
 
@@ -461,7 +461,7 @@ export async function requestApproval(
   const supabase = await db();
   const { data, error } = await supabase
     .from("agent_approvals")
-    .insert({ action, summary, details })
+    .insert({ action, summary, details: details as never })
     .select("id, token, action, summary")
     .single();
   if (error) throw new Error(error.message);
