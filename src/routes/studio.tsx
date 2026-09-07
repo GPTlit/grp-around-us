@@ -416,7 +416,7 @@ function WorkspacePanel({
                   {c.reverted ? " (undone)" : ""}
                 </p>
                 <p className="font-mono text-[11px] text-muted-foreground">
-                  {c.branch} · {c.changed_paths?.length ?? 0} files
+                  {c.branch} · {Array.isArray(c.changed_paths) ? c.changed_paths.length : 0} files
                 </p>
               </li>
             ))}
