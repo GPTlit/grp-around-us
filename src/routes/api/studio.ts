@@ -188,6 +188,38 @@ function makeTools(token: string) {
   } as const;
 }
 
+function studioErrorMessage(error: unknown) {
+  const gatewayError = error as {
+    message?: string;
+    statusCode?: number;
+    responseBody?: string;
+  };
+
+  if (gatewayError.statusCode === 402) {
+    return "Deckmind is paused because this workspace has no AI credits. Add Lovable AI credits, then send your message again.";
+  }
+  if (gatewayError.statusCode === 403) {
+    return "Deckmind is blocked by the workspace’s AI settings or spending limit. A workspace admin needs to enable Lovable AI or raise the limit.";
+  }
+  if (gatewayError.statusCode === 429) {
+    return "Deckmind is temporarily rate-limited. Wait a moment, then try again.";
+  }
+  if (gatewayError.statusCode === 401) {
+    return "Deckmind’s AI connection is not configured correctly. The app owner needs to reconnect Lovable AI.";
+  }
+  if (gatewayError.responseBody) {
+    try {
+      const body = JSON.parse(gatewayError.responseBody) as { error?: { message?: string }; message?: string };
+      const message = body.error?.message ?? body.message;
+      if (message) return message;
+    } catch {
+      // The provider sometimes returns a plain-text error body.
+      return gatewayError.responseBody;
+    }
+  }
+  return gatewayError.message ?? "Deckmind could not complete that request.";
+}
+
 export const Route = createFileRoute("/api/studio")({
   server: {
     handlers: {
@@ -223,6 +255,7 @@ export const Route = createFileRoute("/api/studio")({
             messages: await convertToModelMessages(body.messages),
             tools: { ...makeTools(token), ...makeAgentTools(actor) },
             stopWhen: stepCountIs(50),
+            maxRetries: 0,
             providerOptions: {
               openai: {
                 forceReasoning: true,
@@ -234,7 +267,10 @@ export const Route = createFileRoute("/api/studio")({
             },
             abortSignal: request.signal,
           });
-          return result.toUIMessageStreamResponse({ sendReasoning: true });
+          return result.toUIMessageStreamResponse({
+            sendReasoning: true,
+            onError: studioErrorMessage,
+          });
         } catch (error) {
           if (error instanceof Error && error.name === "AbortError") {
             return new Response(null, { status: 499 });
